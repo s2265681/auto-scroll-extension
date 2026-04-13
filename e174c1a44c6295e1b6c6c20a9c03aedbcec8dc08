@@ -1,0 +1,31 @@
+assets/promo-marquee.html
+  bad3d40ca02f6bb8 1-263
+PRIVACY.md
+  bad3d40ca02f6bb8 1-56
+assets/store-listing-guide.md
+  bad3d40ca02f6bb8 1-165
+assets/promo-small.html
+  bad3d40ca02f6bb8 1-100
+assets/screenshot-generator.html
+  bad3d40ca02f6bb8 1-660
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "e174c1a44c6295e1b6c6c20a9c03aedbcec8dc08",
+  "prompts": {
+    "bad3d40ca02f6bb8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1d9a2270-dd6f-44c3-b4e7-6e7c18ea2262",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "佳伟",
+      "messages": [],
+      "total_additions": 1244,
+      "total_deletions": 0,
+      "accepted_lines": 1244,
+      "overriden_lines": 0
+    }
+  }
+}
