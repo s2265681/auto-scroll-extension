@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Marquee Promo Tile - 1400x560</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a1a; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+  .marquee {
+    width: 1400px;
+    height: 560px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 装饰 */
+  .marquee::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(233,69,96,0.12) 0%, transparent 70%);
+    top: -200px; right: -100px;
+  }
+  .marquee::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(78,204,163,0.08) 0%, transparent 70%);
+    bottom: -100px; left: -50px;
+  }
+
+  .marquee-left {
+    z-index: 1;
+    max-width: 500px;
+  }
+
+  .marquee-icon {
+    width: 72px; height: 72px;
+    background: linear-gradient(135deg, #e94560, #c23152);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin-bottom: 24px;
+    box-shadow: 0 6px 24px rgba(233,69,96,0.4);
+  }
+
+  .marquee-left h1 {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 42px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .marquee-left p {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 18px;
+    color: #8888aa;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .marquee-features {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .marquee-feat {
+    background: rgba(233,69,96,0.12);
+    border: 1px solid rgba(233,69,96,0.25);
+    color: #e94560;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: -apple-system, sans-serif;
+    font-weight: 600;
+  }
+
+  /* 右侧：模拟插件弹窗 */
+  .marquee-right {
+    z-index: 1;
+  }
+
+  .mock-popup {
+    width: 280px;
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.5);
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .mock-master {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #16213e, #1a1a3e);
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+  }
+  .mock-master h3 { font-size: 15px; color: #e94560; margin-bottom: 2px; }
+  .mock-master .desc { font-size: 10px; color: #666; }
+
+  .mock-switch {
+    width: 44px; height: 24px;
+    background: #e94560;
+    border-radius: 24px;
+    position: relative;
+    box-shadow: 0 0 8px rgba(233,69,96,0.3);
+  }
+  .mock-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; right: 3px;
+  }
+
+  .mock-status {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .mock-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    background: #4ecca3;
+    box-shadow: 0 0 6px rgba(78,204,163,0.5);
+  }
+
+  .mock-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+  .mock-speed { color: #e94560; font-weight: 600; font-size: 14px; }
+
+  .mock-slider {
+    width: 100%; height: 6px;
+    background: #16213e;
+    border-radius: 3px;
+    position: relative;
+    margin-bottom: 4px;
+  }
+  .mock-fill {
+    height: 100%; width: 50%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #e94560, #c23152);
+  }
+  .mock-thumb {
+    position: absolute;
+    top: -6px; left: 50%;
+    width: 18px; height: 18px;
+    background: #e94560;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(233,69,96,0.4);
+    transform: translateX(-50%);
+  }
+  .mock-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 16px;
+  }
+
+  .mock-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    background: linear-gradient(135deg, #533483, #3a1f6e);
+  }
+
+  .mock-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #555;
+    margin-top: 12px;
+  }
+  .mock-hint kbd {
+    background: #16213e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #aaa;
+    border: 1px solid #2a2a4a;
+  }
+</style>
+</head>
+<body>
+
+<div class="marquee">
+  <div class="marquee-left">
+    <div class="marquee-icon">▼</div>
+    <h1>Auto Scroll Reader</h1>
+    <p>解放双手，沉浸阅读。<br>自动匀速滚动页面，支持快捷键控制，<br>兼容掘金、知乎、Medium 等各类网站。</p>
+    <div class="marquee-features">
+      <span class="marquee-feat">Space 暂停/继续</span>
+      <span class="marquee-feat">← → 调速</span>
+      <span class="marquee-feat">10 档速度</span>
+      <span class="marquee-feat">智能暂停</span>
+      <span class="marquee-feat">全局开关</span>
+      <span class="marquee-feat">零依赖</span>
+    </div>
+  </div>
+
+  <div class="marquee-right">
+    <div class="mock-popup">
+      <div class="mock-master">
+        <div>
+          <h3>Auto Scroll Reader</h3>
+          <div class="desc">插件开关</div>
+        </div>
+        <div class="mock-switch"></div>
+      </div>
+      <div class="mock-status">
+        <span class="mock-dot"></span>
+        <span>正在滚动</span>
+      </div>
+      <div>
+        <div class="mock-label">
+          <span>滚动速度</span>
+          <span class="mock-speed">5</span>
+        </div>
+        <div class="mock-slider">
+          <div class="mock-fill"></div>
+          <div class="mock-thumb"></div>
+        </div>
+        <div class="mock-labels"><span>慢</span><span>快</span></div>
+      </div>
+      <div class="mock-btn">⏸ 暂停滚动</div>
+      <div class="mock-hint">
+        <kbd>Space</kbd> 开始/暂停 · <kbd>←</kbd><kbd>→</kbd> 调速
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

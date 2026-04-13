@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Auto Scroll Reader - Screenshots</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a1a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+
+  .screenshot {
+    width: 1280px;
+    height: 800px;
+    position: relative;
+    overflow: hidden;
+    margin: 40px auto;
+    border: 2px solid #333;
+    background: #f5f5f5;
+  }
+
+  .screenshot .label {
+    position: absolute;
+    top: -30px;
+    left: 0;
+    color: #888;
+    font-size: 14px;
+  }
+
+  /* 模拟浏览器顶栏 */
+  .browser-bar {
+    height: 40px;
+    background: #2d2d2d;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+  }
+  .browser-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .browser-dot.r { background: #ff5f57; }
+  .browser-dot.y { background: #febc2e; }
+  .browser-dot.g { background: #28c840; }
+  .browser-bar .url-bar {
+    flex: 1;
+    margin-left: 12px;
+    background: #1a1a1a;
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: #888;
+    font-size: 13px;
+  }
+
+  /* 模拟文章页面 */
+  .article-page {
+    height: 760px;
+    display: flex;
+    background: #ffffff;
+  }
+  .article-sidebar {
+    width: 220px;
+    background: #fafafa;
+    border-right: 1px solid #eee;
+    padding: 24px 16px;
+  }
+  .article-sidebar .nav-item {
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #666;
+  }
+  .article-sidebar .nav-item.active {
+    background: #f0f0ff;
+    color: #e94560;
+    font-weight: 600;
+  }
+  .article-content {
+    flex: 1;
+    padding: 40px 60px;
+    overflow: hidden;
+    position: relative;
+  }
+  .article-content h1 {
+    font-size: 28px;
+    color: #1a1a2e;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
+  .article-meta {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 24px;
+  }
+  .article-content p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #333;
+    margin-bottom: 16px;
+    text-align: justify;
+  }
+  .article-content h2 {
+    font-size: 22px;
+    color: #1a1a2e;
+    margin: 28px 0 12px;
+  }
+
+  /* 插件弹窗 */
+  .popup-overlay {
+    position: absolute;
+    top: 50px;
+    right: 20px;
+    width: 280px;
+    background: #1a1a2e;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    color: #e0e0e0;
+    z-index: 10;
+  }
+
+  .popup-master {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    background: linear-gradient(135deg, #16213e, #1a1a3e);
+    border: 1px solid #2a2a4a;
+    border-radius: 10px;
+  }
+  .popup-master h3 {
+    font-size: 15px;
+    color: #e94560;
+    margin-bottom: 2px;
+  }
+  .popup-master .desc { font-size: 10px; color: #666; }
+
+  .popup-switch {
+    width: 44px; height: 24px;
+    background: #e94560;
+    border-radius: 24px;
+    position: relative;
+    box-shadow: 0 0 8px rgba(233,69,96,0.3);
+  }
+  .popup-switch::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 3px; right: 3px;
+  }
+  .popup-switch.off {
+    background: #333;
+    box-shadow: none;
+  }
+  .popup-switch.off::after {
+    right: auto; left: 3px;
+    background: #888;
+  }
+
+  .popup-status {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 12px;
+  }
+  .popup-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .popup-dot.active { background: #4ecca3; box-shadow: 0 0 6px rgba(78,204,163,0.5); }
+  .popup-dot.paused { background: #f0a500; box-shadow: 0 0 6px rgba(240,165,0,0.4); }
+  .popup-dot.inactive { background: #555; }
+
+  .popup-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+  .popup-speed-val { color: #e94560; font-weight: 600; font-size: 14px; }
+
+  .popup-slider {
+    width: 100%;
+    height: 6px;
+    background: #16213e;
+    border-radius: 3px;
+    position: relative;
+    margin-bottom: 4px;
+  }
+  .popup-slider-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #e94560, #c23152);
+  }
+  .popup-slider-thumb {
+    position: absolute;
+    top: -6px;
+    width: 18px; height: 18px;
+    background: #e94560;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(233,69,96,0.4);
+    transform: translateX(-50%);
+  }
+  .popup-speed-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 16px;
+  }
+
+  .popup-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .popup-btn.start { background: linear-gradient(135deg, #e94560, #c23152); }
+  .popup-btn.stop { background: linear-gradient(135deg, #533483, #3a1f6e); }
+
+  .popup-hint {
+    text-align: center;
+    font-size: 11px;
+    color: #555;
+    margin-top: 12px;
+  }
+  .popup-hint kbd {
+    background: #16213e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #aaa;
+    border: 1px solid #2a2a4a;
+  }
+
+  /* 滚动指示线 */
+  .scroll-indicator {
+    position: absolute;
+    right: 310px;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  .scroll-arrow {
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid #e94560;
+    opacity: 0.6;
+  }
+  .scroll-arrow:nth-child(1) { opacity: 0.3; }
+  .scroll-arrow:nth-child(2) { opacity: 0.5; }
+  .scroll-arrow:nth-child(3) { opacity: 0.8; }
+
+  @keyframes scrollPulse {
+    0%, 100% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(8px); opacity: 0.7; }
+  }
+
+  /* 页面内 Toast */
+  .page-toast {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: system-ui, sans-serif;
+    z-index: 20;
+  }
+  .page-toast.warn {
+    border: 1px solid #e94560;
+    color: #e94560;
+  }
+
+  /* 快捷键展示大图 */
+  .shortcut-showcase {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 40px;
+    z-index: 10;
+  }
+  .shortcut-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .shortcut-key {
+    width: 64px; height: 64px;
+    background: #1a1a2e;
+    border: 2px solid #e94560;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #e94560;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(233,69,96,0.3);
+  }
+  .shortcut-key.wide { width: 100px; font-size: 16px; }
+  .shortcut-desc {
+    font-size: 14px;
+    color: #1a1a2e;
+    font-weight: 600;
+    background: rgba(233,69,96,0.1);
+    padding: 4px 12px;
+    border-radius: 4px;
+  }
+
+  /* 功能高亮框 */
+  .feature-badge {
+    position: absolute;
+    background: linear-gradient(135deg, #e94560, #c23152);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(233,69,96,0.4);
+  }
+
+  .section-title {
+    color: #aaa;
+    font-size: 16px;
+    text-align: center;
+    padding: 20px 0 0;
+  }
+</style>
+</head>
+<body>
+
+<p class="section-title">截图 1：主功能展示 — 自动滚动中（1280×800）</p>
+<div class="screenshot" id="ss1">
+  <div class="browser-bar">
+    <div class="browser-dot r"></div>
+    <div class="browser-dot y"></div>
+    <div class="browser-dot g"></div>
+    <div class="url-bar">https://juejin.cn/post/7300000000000000000</div>
+  </div>
+  <div class="article-page">
+    <div class="article-sidebar">
+      <div class="nav-item active">首页</div>
+      <div class="nav-item">沸点</div>
+      <div class="nav-item">课程</div>
+      <div class="nav-item">直播</div>
+      <div class="nav-item">活动</div>
+    </div>
+    <div class="article-content">
+      <h1>深入理解 JavaScript 异步编程</h1>
+      <div class="article-meta">2024-01-15 · 阅读 3,280 · 前端开发</div>
+      <p>JavaScript 是一门单线程语言，但它通过事件循环机制实现了非阻塞的异步操作。理解异步编程模型对于编写高性能的前端应用至关重要。本文将从回调函数开始，逐步深入到 Promise、async/await 等现代异步方案。</p>
+      <h2>1. 事件循环（Event Loop）</h2>
+      <p>事件循环是 JavaScript 运行时的核心机制。它不断检查调用栈是否为空，如果为空则从消息队列中取出下一个任务执行。这个过程保证了即使在单线程环境下，也能高效处理 I/O 操作、定时器和用户交互等异步任务。</p>
+      <p>微任务队列（Microtask Queue）的优先级高于宏任务队列（Macrotask Queue）。Promise 的 .then() 回调属于微任务，而 setTimeout 属于宏任务。这意味着在一个宏任务执行完毕后，所有排队的微任务会在下一个宏任务之前全部执行。</p>
+      <h2>2. Promise 深入</h2>
+      <p>Promise 是 ES6 引入的异步编程解决方案，它代表一个异步操作的最终完成或失败。Promise 有三种状态：pending（进行中）、fulfilled（已成功）和 rejected（已失败）。状态一旦改变就不会再变。</p>
+    </div>
+
+    <!-- 插件弹窗 - 滚动中 -->
+    <div class="popup-overlay">
+      <div class="popup-master">
+        <div>
+          <h3>Auto Scroll Reader</h3>
+          <div class="desc">插件开关</div>
+        </div>
+        <div class="popup-switch"></div>
+      </div>
+      <div class="popup-status">
+        <span class="popup-dot active"></span>
+        <span>正在滚动</span>
+      </div>
+      <div>
+        <div class="popup-label">
+          <span>滚动速度</span>
+          <span class="popup-speed-val">3</span>
+        </div>
+        <div class="popup-slider">
+          <div class="popup-slider-fill" style="width:27%"></div>
+          <div class="popup-slider-thumb" style="left:27%"></div>
+        </div>
+        <div class="popup-speed-labels">
+          <span>慢</span><span>快</span>
+        </div>
+      </div>
+      <div class="popup-btn stop">⏸ 暂停滚动</div>
+      <div class="popup-hint">
+        <kbd>Space</kbd> 开始/暂停 · <kbd>←</kbd><kbd>→</kbd> 调速
+      </div>
+    </div>
+
+    <!-- 滚动指示 -->
+    <div class="scroll-indicator">
+      <div class="scroll-arrow"></div>
+      <div class="scroll-arrow"></div>
+      <div class="scroll-arrow"></div>
+    </div>
+  </div>
+
+  <div class="feature-badge" style="bottom:30px; left:30px;">自动匀速滚动中</div>
+</div>
+
+
+<p class="section-title">截图 2：快捷键控制（1280×800）</p>
+<div class="screenshot" id="ss2">
+  <div class="browser-bar">
+    <div class="browser-dot r"></div>
+    <div class="browser-dot y"></div>
+    <div class="browser-dot g"></div>
+    <div class="url-bar">https://medium.com/article/understanding-react-hooks</div>
+  </div>
+  <div class="article-page">
+    <div class="article-sidebar">
+      <div class="nav-item active">Home</div>
+      <div class="nav-item">Explore</div>
+      <div class="nav-item">Notifications</div>
+      <div class="nav-item">Lists</div>
+      <div class="nav-item">Stories</div>
+    </div>
+    <div class="article-content">
+      <h1>Understanding React Hooks: A Complete Guide</h1>
+      <div class="article-meta">Jan 20, 2024 · 12 min read · React · Frontend</div>
+      <p>React Hooks revolutionized how we write React components by allowing us to use state and other React features without writing class components. Since their introduction in React 16.8, hooks have become the standard way to manage state and side effects in functional components.</p>
+      <h2>Why Hooks?</h2>
+      <p>Before hooks, sharing stateful logic between components was complex. We had to use patterns like render props and higher-order components (HOCs), which led to "wrapper hell" — deeply nested component trees that were hard to follow. Hooks solve this by letting you extract stateful logic into reusable functions.</p>
+      <p>Additionally, class components came with the overhead of understanding 'this' binding, lifecycle methods, and other JavaScript quirks that made code harder to read and maintain. Functional components with hooks offer a simpler mental model.</p>
+    </div>
+
+    <!-- 速度提示 Toast -->
+    <div class="page-toast">速度: 5</div>
+
+    <!-- 快捷键展示 -->
+    <div class="shortcut-showcase">
+      <div class="shortcut-item">
+        <div class="shortcut-key wide">Space</div>
+        <div class="shortcut-desc">开始 / 暂停</div>
+      </div>
+      <div class="shortcut-item">
+        <div class="shortcut-key">←</div>
+        <div class="shortcut-desc">减速</div>
+      </div>
+      <div class="shortcut-item">
+        <div class="shortcut-key">→</div>
+        <div class="shortcut-desc">加速</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-badge" style="top:50px; left:240px;">无需打开面板，快捷键操控一切</div>
+</div>
+
+
+<p class="section-title">截图 3：速度调节（1280×800）</p>
+<div class="screenshot" id="ss3">
+  <div class="browser-bar">
+    <div class="browser-dot r"></div>
+    <div class="browser-dot y"></div>
+    <div class="browser-dot g"></div>
+    <div class="url-bar">https://developer.mozilla.org/zh-CN/docs/Web/JavaScript</div>
+  </div>
+  <div class="article-page">
+    <div class="article-sidebar">
+      <div class="nav-item">References</div>
+      <div class="nav-item active">JavaScript</div>
+      <div class="nav-item">Web APIs</div>
+      <div class="nav-item">CSS</div>
+      <div class="nav-item">HTML</div>
+    </div>
+    <div class="article-content">
+      <h1>JavaScript 参考文档</h1>
+      <div class="article-meta">MDN Web Docs · 最后更新于 2024-01-10</div>
+      <p>本部分是 JavaScript 参考文档，提供了 JavaScript 语言的完整参考信息。在这里你可以找到关于 JavaScript 中所有对象、函数和方法的详细描述。</p>
+      <h2>内置对象</h2>
+      <p>JavaScript 标准内置对象，包括它们的方法和属性。值属性包括 globalThis、Infinity、NaN 和 undefined。函数属性包括 eval()、isFinite()、isNaN()、parseFloat() 和 parseInt() 等。</p>
+      <p>基本对象包括 Object、Function、Boolean 和 Symbol。错误对象包括 Error 及其各种子类型如 TypeError、RangeError 等。</p>
+    </div>
+
+    <!-- 插件弹窗 - 高速 -->
+    <div class="popup-overlay">
+      <div class="popup-master">
+        <div>
+          <h3>Auto Scroll Reader</h3>
+          <div class="desc">插件开关</div>
+        </div>
+        <div class="popup-switch"></div>
+      </div>
+      <div class="popup-status">
+        <span class="popup-dot active"></span>
+        <span>正在滚动</span>
+      </div>
+      <div>
+        <div class="popup-label">
+          <span>滚动速度</span>
+          <span class="popup-speed-val">8</span>
+        </div>
+        <div class="popup-slider">
+          <div class="popup-slider-fill" style="width:82%"></div>
+          <div class="popup-slider-thumb" style="left:82%"></div>
+        </div>
+        <div class="popup-speed-labels">
+          <span>慢</span><span>快</span>
+        </div>
+      </div>
+      <div class="popup-btn stop">⏸ 暂停滚动</div>
+      <div class="popup-hint">
+        <kbd>Space</kbd> 开始/暂停 · <kbd>←</kbd><kbd>→</kbd> 调速
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-badge" style="bottom:30px; left:30px;">10 档速度，实时调节</div>
+</div>
+
+
+<p class="section-title">截图 4：智能暂停（1280×800）</p>
+<div class="screenshot" id="ss4">
+  <div class="browser-bar">
+    <div class="browser-dot r"></div>
+    <div class="browser-dot y"></div>
+    <div class="browser-dot g"></div>
+    <div class="url-bar">https://zhihu.com/question/12345678</div>
+  </div>
+  <div class="article-page">
+    <div class="article-sidebar">
+      <div class="nav-item active">推荐</div>
+      <div class="nav-item">热榜</div>
+      <div class="nav-item">视频</div>
+      <div class="nav-item">关注</div>
+    </div>
+    <div class="article-content">
+      <h1>如何评价 2024 年前端技术趋势？</h1>
+      <div class="article-meta">知乎 · 2,847 人关注 · 1,293 条回答</div>
+      <p>2024 年前端领域继续保持快速发展。React Server Components 的成熟、Bun 运行时的崛起、以及 AI 辅助编程的普及，都深刻改变着开发者的工作方式。以下是几个值得关注的趋势：</p>
+      <h2>1. React Server Components</h2>
+      <p>RSC 让服务端渲染和客户端交互的边界变得更加灵活。Next.js 14 的 App Router 已经全面采用 RSC 架构，这意味着开发者需要重新思考组件的渲染策略。</p>
+      <p>服务端组件可以直接访问数据库、文件系统等后端资源，减少了传统 API 层的复杂度。但这也带来了新的心智模型挑战——如何合理划分服务端和客户端组件的职责。</p>
+    </div>
+
+    <!-- 插件弹窗 - 已暂停 -->
+    <div class="popup-overlay">
+      <div class="popup-master">
+        <div>
+          <h3>Auto Scroll Reader</h3>
+          <div class="desc">插件开关</div>
+        </div>
+        <div class="popup-switch"></div>
+      </div>
+      <div class="popup-status">
+        <span class="popup-dot paused"></span>
+        <span style="color:#f0a500;">已暂停</span>
+      </div>
+      <div>
+        <div class="popup-label">
+          <span>滚动速度</span>
+          <span class="popup-speed-val">5</span>
+        </div>
+        <div class="popup-slider">
+          <div class="popup-slider-fill" style="width:50%"></div>
+          <div class="popup-slider-thumb" style="left:50%"></div>
+        </div>
+        <div class="popup-speed-labels">
+          <span>慢</span><span>快</span>
+        </div>
+      </div>
+      <div class="popup-btn start">▶ 开始滚动</div>
+      <div class="popup-hint">
+        <kbd>Space</kbd> 开始/暂停 · <kbd>←</kbd><kbd>→</kbd> 调速
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-badge" style="bottom:30px; left:30px;">滚动鼠标 / 点击页面 → 自动暂停</div>
+  <div class="feature-badge" style="bottom:30px; right:30px; background: linear-gradient(135deg, #533483, #3a1f6e);">按 Space 恢复滚动</div>
+</div>
+
+
+<p class="section-title">截图 5：全局开关（1280×800）</p>
+<div class="screenshot" id="ss5">
+  <div class="browser-bar">
+    <div class="browser-dot r"></div>
+    <div class="browser-dot y"></div>
+    <div class="browser-dot g"></div>
+    <div class="url-bar">https://github.com/user/awesome-project</div>
+  </div>
+  <div class="article-page">
+    <div class="article-sidebar" style="opacity:0.5;">
+      <div class="nav-item">Overview</div>
+      <div class="nav-item active">Repositories</div>
+      <div class="nav-item">Projects</div>
+      <div class="nav-item">Packages</div>
+    </div>
+    <div class="article-content">
+      <h1>awesome-project</h1>
+      <div class="article-meta">GitHub · ⭐ 1,234 · MIT License</div>
+      <p>A curated list of awesome resources for full-stack developers. This repository contains links to tutorials, tools, libraries, and best practices across the entire web development stack.</p>
+      <h2>Table of Contents</h2>
+      <p>Frontend Frameworks: React, Vue, Angular, Svelte, and more. Each section includes getting started guides, advanced patterns, and recommended libraries for common use cases.</p>
+      <p>Backend Technologies: Node.js, Deno, Go, Rust, Python. Covers REST APIs, GraphQL, gRPC, WebSockets, and server-side rendering strategies.</p>
+    </div>
+
+    <!-- 插件弹窗 - 关闭状态 -->
+    <div class="popup-overlay" style="opacity: 0.9;">
+      <div class="popup-master">
+        <div>
+          <h3>Auto Scroll Reader</h3>
+          <div class="desc">插件开关</div>
+        </div>
+        <div class="popup-switch off"></div>
+      </div>
+      <div style="opacity:0.35;">
+        <div class="popup-status">
+          <span class="popup-dot inactive"></span>
+          <span>未启动</span>
+        </div>
+        <div>
+          <div class="popup-label">
+            <span>滚动速度</span>
+            <span class="popup-speed-val">3</span>
+          </div>
+          <div class="popup-slider">
+            <div class="popup-slider-fill" style="width:27%"></div>
+            <div class="popup-slider-thumb" style="left:27%"></div>
+          </div>
+          <div class="popup-speed-labels">
+            <span>慢</span><span>快</span>
+          </div>
+        </div>
+        <div class="popup-btn start" style="opacity:0.5;">▶ 开始滚动</div>
+        <div class="popup-hint">
+          <kbd>Space</kbd> 开始/暂停 · <kbd>←</kbd><kbd>→</kbd> 调速
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feature-badge" style="bottom:30px; left:30px;">关闭开关 → 所有功能停用，空格恢复默认行为</div>
+</div>
+
+</body>
+</html>
