@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 280px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+    }
+
+    .master-switch {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #16213e, #1a1a3e);
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+    }
+
+    .master-switch .master-info h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e94560;
+      margin-bottom: 2px;
+    }
+
+    .master-switch .master-desc {
+      font-size: 10px;
+      color: #666;
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #333;
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+
+    .switch .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: #888;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    .switch input:checked + .slider {
+      background: #e94560;
+      box-shadow: 0 0 8px rgba(233, 69, 96, 0.3);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(20px);
+      background: #fff;
+    }
+
+    .panel {
+      transition: opacity 0.3s;
+    }
+
+    .panel.disabled {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .status {
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .status-dot.active {
+      background: #4ecca3;
+      box-shadow: 0 0 6px rgba(78, 204, 163, 0.5);
+    }
+
+    .status-dot.paused {
+      background: #f0a500;
+      box-shadow: 0 0 6px rgba(240, 165, 0, 0.4);
+    }
+
+    .status-dot.inactive {
+      background: #555;
+    }
+
+    .control-group {
+      margin-bottom: 16px;
+    }
+
+    .control-group label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .speed-value {
+      color: #e94560;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #16213e;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e94560;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(233, 69, 96, 0.4);
+      transition: box-shadow 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 12px rgba(233, 69, 96, 0.6);
+    }
+
+    .speed-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .toggle-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .toggle-btn.start {
+      background: linear-gradient(135deg, #e94560, #c23152);
+      color: white;
+    }
+
+    .toggle-btn.start:hover {
+      background: linear-gradient(135deg, #c23152, #a02040);
+    }
+
+    .toggle-btn.stop {
+      background: linear-gradient(135deg, #533483, #3a1f6e);
+      color: white;
+    }
+
+    .toggle-btn.stop:hover {
+      background: linear-gradient(135deg, #3a1f6e, #2a1550);
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 11px;
+      color: #555;
+      margin-top: 12px;
+    }
+
+    .hint kbd {
+      background: #16213e;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: #aaa;
+      border: 1px solid #2a2a4a;
+    }
+
+    .toast {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .toast.warn {
+      border: 1px solid #e94560;
+      color: #e94560;
+    }
+  </style>
+</head>
+<body>
+  <div class="master-switch">
+    <div class="master-info">
+      <h1>Auto Scroll Reader</h1>
+      <div class="master-desc">插件开关</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="masterToggle" checked>
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="status">
+      <span class="status-dot inactive" id="statusDot"></span>
+      <span id="statusText">未启动</span>
+    </div>
+
+    <div class="control-group">
+      <label>
+        <span>滚动速度</span>
+        <span class="speed-value" id="speedDisplay">3</span>
+      </label>
+      <div>
+        <input type="range" id="speedSlider" min="1" max="10" value="3" step="1">
+      </div>
+      <div class="speed-labels">
+        <span>慢</span>
+        <span>快</span>
+      </div>
+    </div>
+
+    <button class="toggle-btn start" id="toggleBtn">
+      <span id="btnIcon">&#9654;</span>
+      <span id="btnText">开始滚动</span>
+    </button>
+
+    <div class="hint">
+      <kbd>Space</kbd> 开始/暂停 · <kbd>&larr;</kbd><kbd>&rarr;</kbd> 调速
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
