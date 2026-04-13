@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "阅读文章时自动匀速滚动页面，支持速度调节和空格键暂停/继续",
   "permissions": ["activeTab", "scripting", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -14,8 +17,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
     }
   ],
   "icons": {

@@ -8,19 +8,24 @@
   let masterEnabled = true;
 
   // 从 storage 读取总开关状态
-  chrome.storage.sync.get({ masterEnabled: true }, (data) => {
-    masterEnabled = data.masterEnabled;
-  });
+  try {
+    chrome.storage.sync.get({ masterEnabled: true }, (data) => {
+      if (chrome.runtime.lastError) return;
+      masterEnabled = data.masterEnabled;
+    });
 
-  // 监听 storage 变化（跨 tab 同步）
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.masterEnabled) {
-      masterEnabled = changes.masterEnabled.newValue;
-      if (!masterEnabled && isScrolling) {
-        fullStop();
+    // 监听 storage 变化（跨 tab 同步）
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.masterEnabled) {
+        masterEnabled = changes.masterEnabled.newValue;
+        if (!masterEnabled && isScrolling) {
+          fullStop();
+        }
       }
-    }
-  });
+    });
+  } catch (e) {
+    // storage 不可用时保持 masterEnabled = true
+  }
 
   // 速度配置
   function getScrollConfig(level) {
