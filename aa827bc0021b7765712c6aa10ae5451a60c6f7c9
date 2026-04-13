@@ -1,0 +1,23 @@
+README.md
+  8f5079936fba5a14 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "aa827bc0021b7765712c6aa10ae5451a60c6f7c9",
+  "prompts": {
+    "8f5079936fba5a14": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e7bcc66f-f604-4e30-b77a-a649af111128",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "佳伟",
+      "messages": [],
+      "total_additions": 71,
+      "total_deletions": 0,
+      "accepted_lines": 71,
+      "overriden_lines": 0
+    }
+  }
+}
